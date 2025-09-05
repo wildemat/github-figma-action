@@ -79,7 +79,7 @@ ${startMarker}
 
 **Image Expires:** ${expirationString}
 
-**Description: <enter description here>**
+**Description: (enter description here)**
 
 </details>
 
