@@ -38,19 +38,55 @@ jobs:
         uses: tj-actions/coverage-badge-js@v2
         if: github.ref == 'refs/heads/main'
         with:
-          output: coverage/coverage-badge.svg
+          output_path: coverage/coverage-badge.svg
 
-      - name: Verify coverage files
+      - name: Verify and rename coverage files
+        if: github.ref == 'refs/heads/main'
         run: |
           echo "Generated files:"
           ls -la coverage/
-          cat coverage/coverage-summary.json
+          
+          # Check if coverage-summary.json exists
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "Coverage summary:"
+            cat coverage/coverage-summary.json
+          fi
+          
+          # Handle different badge file names the action might generate
+          if [ -f coverage/badge.svg ]; then
+            mv coverage/badge.svg coverage/coverage-badge.svg
+            echo "Renamed badge.svg to coverage-badge.svg"
+          fi
+          
+          if [ -f coverage/coverage-badge.svg ]; then
+            echo "Coverage badge exists:"
+            ls -la coverage/coverage-badge.svg
+          else
+            echo "Coverage badge NOT found"
+          fi
 
       - name: Commit coverage badge and lockfile
         if: github.ref == 'refs/heads/main'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add coverage/coverage-badge.svg yarn.lock
-          git diff --staged --quiet || git commit -m "Update coverage badge and lockfile"
-          git push
+          
+          # Add yarn.lock if it exists
+          if [ -f yarn.lock ]; then
+            git add yarn.lock
+            echo "Added yarn.lock"
+          fi
+          
+          # Add coverage badge if it exists
+          if [ -f coverage/coverage-badge.svg ]; then
+            git add coverage/coverage-badge.svg
+            echo "Added coverage badge"
+          fi
+          
+          # Only commit and push if there are staged changes
+          if ! git diff --staged --quiet; then
+            git commit -m "Update coverage badge and lockfile"
+            git push
+          else
+            echo "No changes to commit"
+          fi
