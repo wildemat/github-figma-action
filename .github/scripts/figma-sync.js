@@ -6,11 +6,34 @@ async function main() {
   const figmaToken = process.env.FIGMA_TOKEN;
   const githubToken = process.env.GITHUB_TOKEN;
   const prNumber = process.env.PR_NUMBER;
-  const prBody = process.env.PR_BODY || "";
+  let prBody = process.env.PR_BODY || "";
 
   if (!figmaToken || !githubToken || !prNumber) {
     console.error("Missing required environment variables");
     process.exit(1);
+  }
+
+  // Get current PR body from API to ensure we have the latest version
+  try {
+    const repoInfo = process.env.GITHUB_REPOSITORY || "";
+    const [owner, repo] = repoInfo.split("/");
+    
+    if (owner && repo) {
+      console.log(`Fetching current PR body for #${prNumber} in ${owner}/${repo}...`);
+      const prResponse = await axios.get(
+        `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
+        {
+          headers: {
+            Authorization: `token ${githubToken}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        }
+      );
+      prBody = prResponse.data.body || "";
+      console.log(`Current PR body length: ${prBody.length}`);
+    }
+  } catch (error) {
+    console.log("Could not fetch current PR body, using provided body:", error.message);
   }
 
   // Regex to find Figma URLs
@@ -109,6 +132,9 @@ async function main() {
         return;
       }
       console.log(`Updating PR #${prNumber} in ${owner}/${repo}...`);
+      console.log(`Original body length: ${prBody.length}`);
+      console.log(`Updated body length: ${updatedBody.length}`);
+      console.log(`Body diff: ${updatedBody.length - prBody.length} characters added`);
 
       const result = await axios.patch(
         `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
