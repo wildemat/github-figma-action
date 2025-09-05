@@ -1,5 +1,7 @@
 # GitHub Figma PR Images
 
+[![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/)
+
 Automatically processes Figma design links in GitHub PR descriptions, replacing them with organized design specifications and previews.
 
 ## Features
@@ -81,20 +83,24 @@ jobs:
 ## How It Works
 
 ### 1. Adding Figma Links
+
 Paste Figma design URLs **above** the `## Design Specs` section in your PR description. The script will only process links that appear before this section.
 
 ### 2. Supported URL Formats
+
 ```
 https://www.figma.com/design/FILE_ID/FILE_NAME?node-id=NODE_ID
 ```
 
 Examples:
+
 - Standalone URL: `https://www.figma.com/design/PtEQFlGwta7PzrMwRjqquH/Homepage--9.2?node-id=3143-20344`
 - Markdown link: `[New homepage design](https://www.figma.com/design/PtEQFlGwta7PzrMwRjqquH/Homepage--9.2?node-id=3143-20344)`
 
 ### 3. Processing Behavior
 
 **Before processing:**
+
 ```markdown
 Here's the new design: https://www.figma.com/design/PtEQFlGwta7PzrMwRjqquH/Homepage--9.2?node-id=3143-20344
 
@@ -102,6 +108,7 @@ And [another view](https://www.figma.com/design/PtEQFlGwta7PzrMwRjqquH/Homepage-
 ```
 
 **After processing:**
+
 ```markdown
 Here's the new design: [Refer to Design Spec 1 below](#spec-1)
 
@@ -136,18 +143,23 @@ And another view ([Refer to Design Spec 2 below](#spec-2))
 ## Design Specs Section Requirements
 
 ### Section Heading Format
+
 The script looks for this **exact** heading format (case-insensitive):
+
 ```markdown
 ## Design Specs
 ```
 
 ### Hidden End Marker
+
 The script automatically adds a hidden HTML comment to mark the end of the Design Specs section:
+
 ```html
 <!-- END_DESIGN_SPECS - WILL NOT DETECT FIGMA LINKS BELOW THIS LINE -->
 ```
 
 ⚠️ **Important**: If you manually move or edit the Design Specs section, ensure you also move this end marker. The script uses this marker to:
+
 - Determine where to append new design specs
 - Count existing design specs for proper numbering
 - Avoid processing Figma links that appear below this marker
@@ -163,6 +175,7 @@ The script automatically adds a hidden HTML comment to mark the end of the Desig
 5. **Uses existing version if specified** - If URL contains `version-id` parameter, uses that instead of fetching latest
 
 ### Image Expiration
+
 - Figma API image URLs expire after **30 days**
 - The expiration date is displayed in each design spec
 - After expiration, images will show as broken links but the Figma design links remain functional

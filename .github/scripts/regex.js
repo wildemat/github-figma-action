@@ -50,12 +50,17 @@ const DESIGN_SPECS_SECTION_REGEX = /## Design Specs/i;
 // Example output: Match "\n## " (to find where next section starts)
 const NEXT_SECTION_REGEX = /\n## /;
 
+// Example input: "### Design Spec 1\n### Design Spec 2"
+// Example output: Match "### Design Spec 1", "### Design Spec 2"
+const DESIGN_SPEC_HEADER_REGEX = /### Design Spec \d+/g;
+
 module.exports = {
   FIGMA_URL_REGEX,
   MARKDOWN_FIGMA_LINK_REGEX,
   DESIGN_SPECS_SECTION_REGEX,
   NEXT_SECTION_REGEX,
   EXISTING_FIGMA_LINKS_REGEX,
+  DESIGN_SPEC_HEADER_REGEX,
   VERSION_ID_REGEX,
   FILE_ID_REGEX,
   NODE_ID_REGEX

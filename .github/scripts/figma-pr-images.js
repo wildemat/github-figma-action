@@ -50,7 +50,7 @@ async function main() {
     // Analyze Design Specs section
     const specsAnalysis = analyzeDesignSpecsSection(prBody);
     console.log(
-      `Found ${specsAnalysis.existingSpecCount} existing figma link(s) in Design Specs section`
+      `Found ${specsAnalysis.existingSpecCount} existing Design Spec entrie(s) in Design Specs section`
     );
 
     // Find Figma links to process
@@ -156,7 +156,7 @@ function analyzeDesignSpecsSection(prBody) {
     specsSectionIndex = prBody.search(regexPatterns.DESIGN_SPECS_SECTION_REGEX);
     specsEndIndex = prBody.indexOf(endMarker);
 
-    // Count existing figma links in the Design Specs section
+    // Count existing Design Spec entries in the Design Specs section
     const specsSectionContent = utils.extractSectionContent(
       prBody,
       specsSectionIndex,
@@ -164,10 +164,8 @@ function analyzeDesignSpecsSection(prBody) {
       regexPatterns.NEXT_SECTION_REGEX
     );
 
-    const existingFigmaLinks = specsSectionContent.match(
-      regexPatterns.EXISTING_FIGMA_LINKS_REGEX
-    );
-    existingSpecCount = existingFigmaLinks ? existingFigmaLinks.length : 0;
+    const existingSpecHeaders = specsSectionContent.match(regexPatterns.DESIGN_SPEC_HEADER_REGEX);
+    existingSpecCount = existingSpecHeaders ? existingSpecHeaders.length : 0;
   }
 
   return {
