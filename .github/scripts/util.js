@@ -50,6 +50,8 @@ function createDesignSpecSnippet(specNumber, specId, attachmentUrl, cleanUrl, ve
   
   return `
 ${startMarker}
+<div style="border: 2px solid #ccc; border-radius: 8px; padding: 16px; margin: 16px 0;">
+
 <a id="${specId}"></a>
 ### Design Spec ${specNumber} [#](#${specId})
 
@@ -70,6 +72,8 @@ ${startMarker}
 
 
 </details>
+
+</div>
 ${endMarker}
 
 `;
