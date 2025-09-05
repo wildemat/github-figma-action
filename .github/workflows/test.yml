@@ -18,10 +18,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "21"
-          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install
+
+      - name: Cache yarn dependencies (for future runs)
+        uses: actions/cache@v3
+        if: hashFiles('yarn.lock') != ''
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Run tests with coverage
         run: yarn test:coverage
