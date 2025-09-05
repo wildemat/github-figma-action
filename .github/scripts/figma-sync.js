@@ -50,20 +50,29 @@ async function main() {
     prBody.substring(0, screenshotsSectionIndex) : 
     prBody;
 
-  // Regex to find Figma URLs
+  // Regex to find Figma URLs - captures the complete URL until whitespace or closing parenthesis
   const figmaUrlRegex =
-    /https:\/\/www\.figma\.com\/design\/([^/]+)\/[^?]*\?[^#]*node-id=([^&]+)/g;
+    /https:\/\/www\.figma\.com\/design\/([^/]+)\/[^?\s)]*\?[^\s)]*node-id=([^&\s)]+)[^\s)]*/g;
 
   let match;
   const figmaLinks = [];
 
   while ((match = figmaUrlRegex.exec(contentToSearch)) !== null) {
-    figmaLinks.push({
-      url: match[0],
-      fileId: match[1],
-      nodeId: match[2].replace("-", ":"), // Convert 3143-20344 to 3143:20344
-      originalIndex: match.index, // Store original position for replacement
-    });
+    const fullUrl = match[0];
+    
+    // Extract fileId and nodeId from the URL
+    const fileIdMatch = fullUrl.match(/\/design\/([^/]+)\//);
+    const nodeIdMatch = fullUrl.match(/node-id=([^&\s)]+)/);
+    
+    if (fileIdMatch && nodeIdMatch) {
+      figmaLinks.push({
+        url: fullUrl,
+        fileId: fileIdMatch[1],
+        nodeId: nodeIdMatch[1].replace("-", ":"), // Convert 3143-20344 to 3143:20344
+        originalIndex: match.index,
+        fullMatch: fullUrl,
+      });
+    }
   }
 
   if (figmaLinks.length === 0) {
@@ -138,7 +147,7 @@ async function main() {
 
       // Replace the original Figma URL with a reference
       const referenceText = `[Refer to Screenshot ${screenshotNumber} below](#${screenshotId})`;
-      updatedBody = updatedBody.replace(link.url, referenceText);
+      updatedBody = updatedBody.replace(link.fullMatch, referenceText);
       
       console.log(`Processed Figma link ${i + 1}/${figmaLinks.length}: ${link.url}`);
     } catch (error) {
