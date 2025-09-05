@@ -90,10 +90,10 @@ jobs:
           fi
           
           echo "Staged changes:"
-          git status --porcelain --staged
+          git diff --cached --name-only
           
           # Only commit and push if there are staged changes
-          if ! git diff --staged --quiet; then
+          if ! git diff --cached --quiet; then
             echo "Committing changes..."
             git commit -m "Update coverage badge and lockfile"
             echo "Pushing to remote..."
