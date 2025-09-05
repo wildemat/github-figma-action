@@ -6,12 +6,13 @@ Automatically processes Figma design links in GitHub PR descriptions, replacing 
 
 ## Features
 
-- Scans PR descriptions for Figma URLs (above the Design Specs section)
+- Scans PR descriptions for Figma URLs (above and within the Design Specs section)
 - Fetches version info and timestamps from Figma API
 - Replaces original Figma URLs with references to organized Design Specs section
-- Downloads and embeds preview images with 30-day expiration
+- Embeds preview images with 30-day expiration from Figma's temporary URLs
 - Organizes all design specs in a dedicated section with collapsible details
 - Prevents duplicate entries and maintains proper numbering
+- Includes blank description fields for manual editing
 
 ## Installation
 
@@ -76,15 +77,36 @@ jobs:
 
 ## Setup
 
-1. **Get Figma Token**: Go to Figma → Settings → Account → Personal access tokens
-2. **Add Secret**: In your repository, go to Settings → Secrets → Actions → Add `FIGMA_TOKEN`
-3. **Test**: Create a PR with a Figma URL in the description
+### 1. Get Figma API Token
+
+Visit **https://www.figma.com/settings** and follow these steps:
+
+1. Go to **Account** tab (if not already selected)
+2. Scroll down to **"Personal access tokens"** section
+3. Click **"Create new token"**
+4. Give it a descriptive name (e.g., "GitHub Action")
+5. Copy the generated token immediately (you won't be able to see it again)
+
+⚠️ **Important**: Save the token right away - Figma only shows it once for security reasons.
+
+### 2. Add GitHub Secret
+
+In your repository, go to **Settings → Secrets and variables → Actions** and add:
+- **Name**: `FIGMA_TOKEN`
+- **Value**: The token you copied from Figma
+
+### 3. Test the Setup
+
+Create a PR with a Figma URL in the description to verify the action works correctly.
 
 ## How It Works
 
 ### 1. Adding Figma Links
 
-Paste Figma design URLs **above** the `## Design Specs` section in your PR description. The script will only process links that appear before this section.
+Paste Figma design URLs anywhere in your PR description. The script processes:
+- Links **above** the Design Specs section 
+- Links **within** the Design Specs section (in unprotected areas)
+- Links **below** the Design Specs section are ignored
 
 ### 2. Supported URL Formats
 
@@ -110,20 +132,22 @@ And [another view](https://www.figma.com/design/PtEQFlGwta7PzrMwRjqquH/Homepage-
 **After processing:**
 
 ```markdown
-Here's the new design: [Refer to Design Spec 1 below](#spec-1)
+Here's the new design: [Refer to Design Spec 1 below](#design-spec-1)
 
-And another view ([Refer to Design Spec 2 below](#spec-2))
+And another view ([Refer to Design Spec 2 below](#design-spec-2))
 
 ## Design Specs
 
-### Design Spec 1
+<!-- START_SPEC_1 - DO NOT EDIT CONTENT BELOW -->
+<a id="design-spec-1"></a>
+### Design Spec 1 [#](#design-spec-1)
 
 <kbd><img alt="Figma Design Preview" src="https://figma-alpha-api.s3.us-west-2.amazonaws.com/..." /></kbd>
 
 <details>
 <summary>spec details</summary>
 
-**Design Link:** <a href="https://www.figma.com/design/PtEQFlGwta7PzrMwRjqquH/?node-id=3143-20344&version-id=2260315635405056828&m=dev" target="_blank">View in Figma</a>
+**Design Link:** [View in Figma](https://www.figma.com/design/PtEQFlGwta7PzrMwRjqquH/?node-id=3143-20344&version-id=2260315635405056828&m=dev) (Cmd+Click to open in new tab)
 
 **Version:** 2260315635405056828
 
@@ -131,11 +155,19 @@ And another view ([Refer to Design Spec 2 below](#spec-2))
 
 **Image Expires:** 2025-10-05
 
-</details>
+**Description:** 
 
-### Design Spec 2
+
+</details>
+<!-- END_SPEC_1 - DO NOT EDIT CONTENT ABOVE -->
+
+<!-- START_SPEC_2 - DO NOT EDIT CONTENT BELOW -->
+<a id="design-spec-2"></a>
+### Design Spec 2 [#](#design-spec-2)
 
 <!-- ... similar structure ... -->
+
+<!-- END_SPEC_2 - DO NOT EDIT CONTENT ABOVE -->
 
 <!-- END_DESIGN_SPECS - WILL NOT DETECT FIGMA LINKS BELOW THIS LINE -->
 ```
@@ -144,11 +176,18 @@ And another view ([Refer to Design Spec 2 below](#spec-2))
 
 ### Section Heading Format
 
-The script looks for this **exact** heading format (case-insensitive):
+The script looks for "Design Specs" headings in any of these formats (case-insensitive):
 
 ```markdown
-## Design Specs
+# Design Specs
+## Design Specs  
+### design specs
+#### DESIGN SPECS
+##### Design specs
+###### design Specs
 ```
+
+⚠️ **Important**: Only **one** Design Specs section is allowed. If multiple sections are detected, the script will error and ask you to consolidate them.
 
 ### Hidden End Marker
 
@@ -164,15 +203,29 @@ The script automatically adds a hidden HTML comment to mark the end of the Desig
 - Count existing design specs for proper numbering
 - Avoid processing Figma links that appear below this marker
 
+### Protected Content Areas
+
+Each design spec is surrounded by protected markers:
+
+```html
+<!-- START_SPEC_1 - DO NOT EDIT CONTENT BELOW -->
+<!-- ... spec content ... -->
+<!-- END_SPEC_1 - DO NOT EDIT CONTENT ABOVE -->
+```
+
+Content within these markers is never modified by the script, ensuring your generated specs remain intact.
+
 ### Link Processing Rules
 
-1. **Only processes links above the Design Specs section** - Links below the section are ignored
-2. **Maintains existing numbering** - New specs continue from the highest existing number
-3. **Handles both formats**:
-   - Standalone URLs → `[Refer to Design Spec X below](#spec-x)`
-   - Markdown links `[text](url)` → `text ([Refer to Design Spec X below](#spec-x))`
-4. **Creates section if missing** - If no Design Specs section exists, creates one at the end
-5. **Uses existing version if specified** - If URL contains `version-id` parameter, uses that instead of fetching latest
+1. **Processes links above and within Design Specs section** - Links below the section end marker are ignored
+2. **All links become references** - Both above and within section links are replaced with reference text pointing to generated specs
+3. **Maintains existing numbering** - New specs continue from the highest existing number
+4. **Handles both formats**:
+   - Standalone URLs → `[Refer to Design Spec X below](#design-spec-x)`
+   - Markdown links `[text](url)` → `text ([Refer to Design Spec X below](#design-spec-x))`
+5. **Creates section if missing** - If no Design Specs section exists, creates one at the end
+6. **Uses existing version if specified** - If URL contains `version-id` parameter, uses that instead of fetching latest
+7. **Includes description field** - Each spec includes a blank **Description:** field for manual editing
 
 ### Image Expiration
 
