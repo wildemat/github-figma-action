@@ -1,12 +1,20 @@
-# GitHub Figma PR Images
-
-[![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/) <sub>Evidence of vibe coding present 😎</sub>
-
-[![Tests](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml/badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
-
+[![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/) |
+[![Tests](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml/badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml) |
 [![Coverage](https://raw.githubusercontent.com/wildemat/github-figma-action/main/coverage/coverage-badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
 
-Github Workflow which processes Figma design links in PR descriptions to organized preview sections with versioning.
+# GitHub Figma PR Images
+
+Copy and paste figma node links into your PR, and convert them to versioned screenshots!
+
+## Before and after
+
+| Before                       | After                      |
+| ---------------------------- | -------------------------- |
+| ![Before](images/before.png) | ![After](images/after.png) |
+
+**Details:**
+
+<img src="images/details.png" alt="After Detail" width="400" />
 
 ## Features
 
@@ -22,7 +30,7 @@ Github Workflow which processes Figma design links in PR descriptions to organiz
 
 ## Installation
 
-### Option 1: Reusable Workflow (Recommended)
+### Option 1: Repository Installation
 
 1. In your repository, create `.github/workflows/figma-pr-images.yml`:
 
@@ -35,7 +43,7 @@ on:
 
 jobs:
   figma-pr-images:
-    uses: wildemat/github-figma-action/.github/workflows/reusable-figma-sync.yml@main
+    uses: wildemat/github-figma-action/.github/workflows/figma-pr-images.yml@main
     secrets:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
 ```
@@ -298,8 +306,9 @@ Tests run automatically on every push and pull request via GitHub Actions. The w
 4. **Local Development**: Run `yarn test:coverage` for detailed terminal output
 
 **Current Test Coverage:**
+
 - Figma URL parsing and validation
-- API response mocking for offline testing  
+- API response mocking for offline testing
 - Design spec snippet generation with collapsible details
 - Reference text creation for both standalone and markdown links
 - Link object creation and manipulation
