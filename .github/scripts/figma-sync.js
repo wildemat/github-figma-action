@@ -162,13 +162,26 @@ async function main() {
   for (let i = 0; i < figmaLinks.length; i++) {
     const link = figmaLinks[i];
     try {
-      // Get file version
-      const versionResponse = await axios.get(
-        `https://api.figma.com/v1/files/${link.fileId}/versions`,
-        { headers: { "X-Figma-Token": figmaToken } }
-      );
+      // Check if version is already specified in the URL
+      const versionIdMatch = link.url.match(/version-id=([^&\s)]+)/);
+      let latestVersion;
 
-      const latestVersion = versionResponse.data.versions[0];
+      if (versionIdMatch) {
+        // Use the version from the URL
+        const versionId = versionIdMatch[1];
+        console.log(`Using existing version from URL: ${versionId}`);
+        latestVersion = {
+          id: versionId,
+          created_at: new Date().toISOString(), // Use current timestamp as fallback
+        };
+      } else {
+        // Get file version from API
+        const versionResponse = await axios.get(
+          `https://api.figma.com/v1/files/${link.fileId}/versions`,
+          { headers: { "X-Figma-Token": figmaToken } }
+        );
+        latestVersion = versionResponse.data.versions[0];
+      }
 
       // Get node image
       const imageResponse = await axios.get(
@@ -205,10 +218,14 @@ async function main() {
       // Clean the URL to include essential parameters and version-id
       const cleanUrl = `https://www.figma.com/design/${
         link.fileId
-      }/?node-id=${link.nodeId.replace(":", "-")}&p=f&version-id=${latestVersion.id}`;
+      }/?node-id=${link.nodeId.replace(":", "-")}&version-id=${
+        latestVersion.id
+      }&m=dev`;
 
       const screenshotSnippet = `
 ### Screenshot ${screenshotNumber}
+
+<kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
 
 <details>
 <summary>screenshot details</summary>
@@ -221,7 +238,6 @@ async function main() {
 
 **Image Expires:** ${expirationString}
 
-<kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
 
 </details>
 
