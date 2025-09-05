@@ -371,26 +371,41 @@ function updateDesignSpecsSection(body, specsContent, specsAnalysis) {
 }
 
 /**
- * Safely replaces a Figma link with reference text, avoiding replacement in protected areas
+ * Safely replaces a Figma link with reference text, avoiding replacement in protected areas and end marker
  * @param {string} body - Full PR body content
  * @param {string} linkMatch - The exact link text to replace
  * @param {string} referenceText - The reference text to replace it with
  * @returns {string} Updated PR body
  */
 function safeReplaceLink(body, linkMatch, referenceText) {
-  // Use a more precise replacement approach to avoid corrupting protected content
-  // Split the body and only replace in the first occurrence that's not in a protected block
+  const endMarker = utils.getDesignSpecsEndMarker();
   
-  let updatedBody = body;
+  // Find the end marker to avoid replacing anything within it
+  const endMarkerIndex = body.indexOf(endMarker);
+  
+  // Split the body into parts: before end marker, end marker, after end marker
+  let beforeEndMarker, endMarkerSection, afterEndMarker;
+  
+  if (endMarkerIndex !== -1) {
+    beforeEndMarker = body.substring(0, endMarkerIndex);
+    endMarkerSection = body.substring(endMarkerIndex, endMarkerIndex + endMarker.length);
+    afterEndMarker = body.substring(endMarkerIndex + endMarker.length);
+  } else {
+    beforeEndMarker = body;
+    endMarkerSection = '';
+    afterEndMarker = '';
+  }
+  
+  // Only replace in the part before the end marker
+  let updatedBeforeEndMarker = beforeEndMarker;
   let searchIndex = 0;
   
   while (true) {
-    const linkIndex = updatedBody.indexOf(linkMatch, searchIndex);
+    const linkIndex = updatedBeforeEndMarker.indexOf(linkMatch, searchIndex);
     if (linkIndex === -1) break;
     
-    // Check if this occurrence is within a protected block
-    const beforeLink = updatedBody.substring(0, linkIndex);
-    const afterLink = updatedBody.substring(linkIndex + linkMatch.length);
+    // Check if this occurrence is within a protected spec entry block
+    const beforeLink = updatedBeforeEndMarker.substring(0, linkIndex);
     
     // Count unclosed START_SPEC markers before this link
     const startMarkers = (beforeLink.match(/<!-- START_SPEC_\d+ - DO NOT EDIT CONTENT BELOW -->/g) || []).length;
@@ -403,15 +418,16 @@ function safeReplaceLink(body, linkMatch, referenceText) {
     }
     
     // This occurrence is safe to replace
-    updatedBody = (
-      updatedBody.substring(0, linkIndex) +
+    updatedBeforeEndMarker = (
+      updatedBeforeEndMarker.substring(0, linkIndex) +
       referenceText +
-      updatedBody.substring(linkIndex + linkMatch.length)
+      updatedBeforeEndMarker.substring(linkIndex + linkMatch.length)
     );
     break;
   }
   
-  return updatedBody;
+  // Reconstruct the full body
+  return updatedBeforeEndMarker + endMarkerSection + afterEndMarker;
 }
 
 /**
