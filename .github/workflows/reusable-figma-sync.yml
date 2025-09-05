@@ -1,0 +1,40 @@
+name: Reusable Figma PR Sync
+
+on:
+  workflow_call:
+    secrets:
+      FIGMA_TOKEN:
+        required: true
+
+jobs:
+  sync-figma:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout calling repository
+        uses: actions/checkout@v4
+
+      - name: Checkout figma action repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/github-figma-action
+          path: .figma-action
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21"
+
+      - name: Install dependencies
+        run: cd .figma-action && npm install
+
+      - name: Process Figma links in PR
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: node .figma-action/.github/scripts/figma-sync.js
