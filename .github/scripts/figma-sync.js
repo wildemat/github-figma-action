@@ -36,6 +36,20 @@ async function main() {
     console.log("Could not fetch current PR body, using provided body:", error.message);
   }
 
+  // Check if Screenshots section exists
+  const screenshotsRegex = /## Screenshots/i;
+  const hasScreenshotsSection = screenshotsRegex.test(prBody);
+  
+  let screenshotsSectionIndex = -1;
+  if (hasScreenshotsSection) {
+    screenshotsSectionIndex = prBody.search(screenshotsRegex);
+  }
+
+  // Only look for Figma URLs above the Screenshots section (or entire body if no section exists)
+  const contentToSearch = hasScreenshotsSection ? 
+    prBody.substring(0, screenshotsSectionIndex) : 
+    prBody;
+
   // Regex to find Figma URLs
   const figmaUrlRegex =
     /https:\/\/www\.figma\.com\/design\/([^/]+)\/[^?]*\?[^#]*node-id=([^&]+)/g;
@@ -43,24 +57,27 @@ async function main() {
   let match;
   const figmaLinks = [];
 
-  while ((match = figmaUrlRegex.exec(prBody)) !== null) {
+  while ((match = figmaUrlRegex.exec(contentToSearch)) !== null) {
     figmaLinks.push({
       url: match[0],
       fileId: match[1],
       nodeId: match[2].replace("-", ":"), // Convert 3143-20344 to 3143:20344
+      originalIndex: match.index, // Store original position for replacement
     });
   }
 
   if (figmaLinks.length === 0) {
-    console.log("No Figma links found in PR description");
+    console.log("No Figma links found above Screenshots section");
     return;
   }
 
-  console.log(`Found ${figmaLinks.length} Figma link(s)`);
+  console.log(`Found ${figmaLinks.length} Figma link(s) above Screenshots section`);
 
   let updatedBody = prBody;
+  let screenshotsContent = "";
 
-  for (const link of figmaLinks) {
+  for (let i = 0; i < figmaLinks.length; i++) {
+    const link = figmaLinks[i];
     try {
       // Get file version
       const versionResponse = await axios.get(
@@ -99,9 +116,11 @@ async function main() {
       
       const attachmentUrl = imageUrl;
 
-      // Create markdown snippet with expiration timestamp
-      const figmaSnippet = `
-## Figma Design Reference
+      // Create screenshot entry for Screenshots section
+      const screenshotNumber = i + 1;
+      const screenshotId = `screenshot-${screenshotNumber}`;
+      const screenshotSnippet = `
+### Screenshot ${screenshotNumber}
 
 **Design Link:** [View in Figma](${link.url})
 
@@ -111,22 +130,44 @@ async function main() {
 
 **Image Expires:** ${expirationString}
 
-**Preview:**
 <kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
 
----
 `;
 
-      // Check if this snippet already exists for this URL
-      if (!updatedBody.includes(`[View in Figma](${link.url})`)) {
-        updatedBody += figmaSnippet;
-        console.log(`Added Figma snippet for ${link.url}`);
-      } else {
-        console.log(`Figma snippet already exists for ${link.url}`);
-      }
+      screenshotsContent += screenshotSnippet;
+
+      // Replace the original Figma URL with a reference
+      const referenceText = `[Refer to Screenshot ${screenshotNumber} below](#${screenshotId})`;
+      updatedBody = updatedBody.replace(link.url, referenceText);
+      
+      console.log(`Processed Figma link ${i + 1}/${figmaLinks.length}: ${link.url}`);
     } catch (error) {
       console.error(`Error processing Figma link ${link.url}:`, error.message);
     }
+  }
+
+  // Add or update Screenshots section
+  if (screenshotsContent) {
+    if (hasScreenshotsSection) {
+      // Append to existing Screenshots section
+      const afterScreenshotsSection = prBody.substring(screenshotsSectionIndex);
+      const nextSectionMatch = afterScreenshotsSection.match(/\n## /);
+      
+      if (nextSectionMatch) {
+        // There's another section after Screenshots
+        const nextSectionIndex = screenshotsSectionIndex + nextSectionMatch.index;
+        updatedBody = updatedBody.substring(0, nextSectionIndex) + 
+                     screenshotsContent + 
+                     updatedBody.substring(nextSectionIndex);
+      } else {
+        // Screenshots is the last section, append at the end
+        updatedBody += screenshotsContent;
+      }
+    } else {
+      // Create new Screenshots section at the end
+      updatedBody += `\n## Screenshots\n${screenshotsContent}`;
+    }
+    console.log(`Added ${figmaLinks.length} screenshot(s) to Screenshots section`);
   }
 
   // Update PR description if changes were made
