@@ -262,14 +262,17 @@ This project uses Jest for testing with comprehensive coverage of the core funct
 ### Running Tests Locally
 
 ```bash
+# Install dependencies
+yarn install
+
 # Run all tests
-npm test
+yarn test
 
 # Run tests with coverage report
-npm run test:coverage
+yarn test:coverage
 
 # Generate JSON coverage summary
-npm run test:coverage-json
+yarn test:coverage-json
 ```
 
 ### Continuous Integration
