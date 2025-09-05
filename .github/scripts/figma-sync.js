@@ -108,8 +108,9 @@ async function main() {
         console.error("Could not parse repository info");
         return;
       }
+      console.log(`Updating PR #${prNumber} in ${owner}/${repo}...`);
 
-      await axios.patch(
+      const result = await axios.patch(
         `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
         { body: updatedBody },
         {
@@ -119,6 +120,8 @@ async function main() {
           },
         }
       );
+
+      console.log("PR update response status:", result.status);
 
       console.log("Successfully updated PR description with Figma previews");
     } catch (error) {
