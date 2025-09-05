@@ -330,34 +330,30 @@ function updateDesignSpecsSection(body, specsContent, specsAnalysis) {
 
   if (specsAnalysis.hasSpecsSection) {
     if (specsAnalysis.specsEndIndex > specsAnalysis.specsSectionIndex) {
-      // Insert before existing end marker
+      // End marker exists - insert content before it
       return (
         body.substring(0, specsAnalysis.specsEndIndex) +
         specsContent +
         body.substring(specsAnalysis.specsEndIndex)
       );
     } else {
-      // Create end marker and insert content
+      // No end marker - find end of Design Specs section and add content + marker
       const afterSpecsSection = body.substring(specsAnalysis.specsSectionIndex);
       const nextSectionMatch = afterSpecsSection.match(
         regexPatterns.NEXT_SECTION_REGEX
       );
 
       if (nextSectionMatch) {
-        const nextSectionIndex =
-          specsAnalysis.specsSectionIndex + nextSectionMatch.index;
-        const withEndMarker =
-          body.substring(0, nextSectionIndex) +
-          `\n${endMarker}` +
-          body.substring(nextSectionIndex);
-
-        const newEndMarkerIndex = withEndMarker.indexOf(endMarker);
+        // Insert before the next section
+        const nextSectionIndex = specsAnalysis.specsSectionIndex + nextSectionMatch.index;
         return (
-          withEndMarker.substring(0, newEndMarkerIndex) +
+          body.substring(0, nextSectionIndex) +
           specsContent +
-          withEndMarker.substring(newEndMarkerIndex)
+          `\n${endMarker}\n` +
+          body.substring(nextSectionIndex)
         );
       } else {
+        // No next section - append to end
         return body + specsContent + `\n${endMarker}`;
       }
     }
