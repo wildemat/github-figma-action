@@ -38,4 +38,4 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BODY: ${{ github.event.pull_request.body }}
-        run: node .figma-action/.github/scripts/figma-sync.js
+        run: node .figma-action/.github/scripts/figma-sync-refactored.js
