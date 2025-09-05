@@ -1,5 +1,5 @@
 node_modules/
-coverage/
+coverage/*
 !coverage/coverage-badge.svg
 *.log
 .DS_Store
