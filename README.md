@@ -96,11 +96,14 @@ jobs:
 This GitHub Action can be configured to run in different ways:
 
 ### Default Behavior (Repository Installation)
+
 - Runs automatically on PR events: `opened`, `edited`
 - Processes all PRs regardless of labels
 
 ### Label-Based Triggering
+
 To run only on PRs with a specific label, the workflow supports:
+
 - **Label requirement**: Add the condition `if: contains(github.event.pull_request.labels.*.name, 'ci:figma-links')` to your workflow
 - **Trigger events**: Include `labeled` in the PR trigger types to run when the label is added
 - **Use case**: Ideal for repositories where you want selective Figma processing
@@ -121,6 +124,7 @@ jobs:
 ```
 
 ### Workflow Call Integration
+
 The action also supports being called from other workflows using `workflow_call`, allowing for complex automation pipelines.
 
 ## Setup
@@ -188,7 +192,7 @@ And another view ([Refer to Design Spec 2 below](#design-spec-2))
 
 ## Design Specs
 
-<!-- START_SPEC_1 - DO NOT EDIT CONTENT BELOW -->
+<!-- START_SPEC_1 -->
 
 <a id="design-spec-1"></a>
 
@@ -210,9 +214,9 @@ And another view ([Refer to Design Spec 2 below](#design-spec-2))
 **Description:**
 
 </details>
-<!-- END_SPEC_1 - DO NOT EDIT CONTENT ABOVE -->
+<!-- END_SPEC_1 -->
 
-<!-- START_SPEC_2 - DO NOT EDIT CONTENT BELOW -->
+<!-- START_SPEC_2 -->
 
 <a id="design-spec-2"></a>
 
@@ -220,9 +224,9 @@ And another view ([Refer to Design Spec 2 below](#design-spec-2))
 
 <!-- ... similar structure ... -->
 
-<!-- END_SPEC_2 - DO NOT EDIT CONTENT ABOVE -->
+<!-- END_SPEC_2 -->
 
-<!-- END_DESIGN_SPECS - WILL NOT DETECT FIGMA LINKS BELOW THIS LINE -->
+<!-- END_DESIGN_SPECS -->
 ```
 
 ## Design Specs Section Requirements
@@ -266,9 +270,9 @@ The script automatically adds a hidden HTML comment to mark the end of the Desig
 Each design spec is surrounded by protected markers:
 
 ```html
-<!-- START_SPEC_1 - DO NOT EDIT CONTENT BELOW -->
+<!-- START_SPEC_1 -->
 <!-- ... spec content ... -->
-<!-- END_SPEC_1 - DO NOT EDIT CONTENT ABOVE -->
+<!-- END_SPEC_1 -->
 ```
 
 Content within these markers is never modified by the script, ensuring your generated specs remain intact.

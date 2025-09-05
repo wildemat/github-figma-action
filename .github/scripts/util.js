@@ -53,8 +53,8 @@ function createDesignSpecSnippet(
   snapshotTimestamp,
   expirationString
 ) {
-  const startMarker = `<!-- START_SPEC_${specNumber} - DO NOT EDIT CONTENT BELOW -->`;
-  const endMarker = `<!-- END_SPEC_${specNumber} - DO NOT EDIT CONTENT ABOVE -->`;
+  const startMarker = `<!-- START_SPEC_${specNumber} -->`;
+  const endMarker = `<!-- END_SPEC_${specNumber} -->`;
 
   return `
 ${startMarker}
@@ -180,7 +180,7 @@ function createLinkObject(
 function extractUnprotectedSpecsContent(specsSectionContent) {
   // Remove all content between START_SPEC_X and END_SPEC_X markers
   const protectedRegex =
-    /<!-- START_SPEC_\d+ - DO NOT EDIT CONTENT BELOW -->[\s\S]*?<!-- END_SPEC_\d+ - DO NOT EDIT CONTENT ABOVE -->/g;
+    /<!-- START_SPEC_\d+ -->[\s\S]*?<!-- END_SPEC_\d+ -->/g;
   return specsSectionContent.replace(protectedRegex, "");
 }
 

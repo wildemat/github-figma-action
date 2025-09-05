@@ -60,15 +60,21 @@ async function main() {
       return;
     }
 
-    const linksAbove = figmaLinks.filter(link => !link.isInSpecsSection).length;
-    const linksWithin = figmaLinks.filter(link => link.isInSpecsSection).length;
-    
+    const linksAbove = figmaLinks.filter(
+      (link) => !link.isInSpecsSection
+    ).length;
+    const linksWithin = figmaLinks.filter(
+      (link) => link.isInSpecsSection
+    ).length;
+
     console.log(`Found ${figmaLinks.length} Figma link(s) to process:`);
     if (linksAbove > 0) {
       console.log(`  - ${linksAbove} above Design Specs section`);
     }
     if (linksWithin > 0) {
-      console.log(`  - ${linksWithin} within Design Specs section (unprotected areas)`);
+      console.log(
+        `  - ${linksWithin} within Design Specs section (unprotected areas)`
+      );
     }
 
     // Process each Figma link
@@ -83,7 +89,7 @@ async function main() {
           figmaToken
         );
         specsContent += result.specSnippet;
-        
+
         // Replace link with reference text using safe replacement to avoid corrupting protected areas
         updatedBody = safeReplaceLink(
           updatedBody,
@@ -141,9 +147,13 @@ async function main() {
  */
 function analyzeDesignSpecsSection(prBody) {
   // Check for multiple Design Specs sections
-  const designSpecsMatches = prBody.match(new RegExp(regexPatterns.DESIGN_SPECS_SECTION_REGEX.source, 'gim'));
+  const designSpecsMatches = prBody.match(
+    new RegExp(regexPatterns.DESIGN_SPECS_SECTION_REGEX.source, "gim")
+  );
   if (designSpecsMatches && designSpecsMatches.length > 1) {
-    throw new Error(`Found ${designSpecsMatches.length} Design Specs sections. Only one is allowed. Please consolidate into a single "Design Specs" section.`);
+    throw new Error(
+      `Found ${designSpecsMatches.length} Design Specs sections. Only one is allowed. Please consolidate into a single "Design Specs" section.`
+    );
   }
 
   const hasSpecsSection = regexPatterns.DESIGN_SPECS_SECTION_REGEX.test(prBody);
@@ -165,7 +175,9 @@ function analyzeDesignSpecsSection(prBody) {
       regexPatterns.NEXT_SECTION_REGEX
     );
 
-    const existingSpecHeaders = specsSectionContent.match(regexPatterns.DESIGN_SPEC_HEADER_REGEX);
+    const existingSpecHeaders = specsSectionContent.match(
+      regexPatterns.DESIGN_SPEC_HEADER_REGEX
+    );
     existingSpecCount = existingSpecHeaders ? existingSpecHeaders.length : 0;
   }
 
@@ -202,7 +214,8 @@ function findFigmaLinks(prBody, specsAnalysis) {
       regexPatterns.NEXT_SECTION_REGEX
     );
 
-    const unprotectedContent = utils.extractUnprotectedSpecsContent(specsSectionContent);
+    const unprotectedContent =
+      utils.extractUnprotectedSpecsContent(specsSectionContent);
     findFigmaLinksInContent(unprotectedContent, figmaLinks, true);
   }
 
@@ -218,8 +231,11 @@ function findFigmaLinks(prBody, specsAnalysis) {
 function findFigmaLinksInContent(content, figmaLinks, isInSpecsSection) {
   // Find markdown links with Figma URLs first
   let markdownMatch;
-  const markdownRegex = new RegExp(regexPatterns.MARKDOWN_FIGMA_LINK_REGEX.source, 'g');
-  
+  const markdownRegex = new RegExp(
+    regexPatterns.MARKDOWN_FIGMA_LINK_REGEX.source,
+    "g"
+  );
+
   while ((markdownMatch = markdownRegex.exec(content)) !== null) {
     const linkText = markdownMatch[1];
     const fullUrl = markdownMatch[2];
@@ -242,8 +258,8 @@ function findFigmaLinksInContent(content, figmaLinks, isInSpecsSection) {
 
   // Find standalone Figma URLs
   let standaloneMatch;
-  const standaloneRegex = new RegExp(regexPatterns.FIGMA_URL_REGEX.source, 'g');
-  
+  const standaloneRegex = new RegExp(regexPatterns.FIGMA_URL_REGEX.source, "g");
+
   while ((standaloneMatch = standaloneRegex.exec(content)) !== null) {
     const fullUrl = standaloneMatch[0];
 
@@ -338,7 +354,7 @@ function updateDesignSpecsSection(body, specsContent, specsAnalysis) {
   if (specsAnalysis.hasSpecsSection) {
     // Recalculate end marker position in case body was modified by link replacements
     const currentEndMarkerIndex = body.indexOf(endMarker);
-    
+
     if (currentEndMarkerIndex > specsAnalysis.specsSectionIndex) {
       // End marker exists - insert content before it
       return (
@@ -355,7 +371,8 @@ function updateDesignSpecsSection(body, specsContent, specsAnalysis) {
 
       if (nextSectionMatch) {
         // Insert before the next section
-        const nextSectionIndex = specsAnalysis.specsSectionIndex + nextSectionMatch.index;
+        const nextSectionIndex =
+          specsAnalysis.specsSectionIndex + nextSectionMatch.index;
         return (
           body.substring(0, nextSectionIndex) +
           specsContent +
@@ -382,53 +399,57 @@ function updateDesignSpecsSection(body, specsContent, specsAnalysis) {
  */
 function safeReplaceLink(body, linkMatch, referenceText) {
   const endMarker = utils.getDesignSpecsEndMarker();
-  
+
   // Find the end marker to avoid replacing anything within it
   const endMarkerIndex = body.indexOf(endMarker);
-  
+
   // Split the body into parts: before end marker, end marker, after end marker
   let beforeEndMarker, endMarkerSection, afterEndMarker;
-  
+
   if (endMarkerIndex !== -1) {
     beforeEndMarker = body.substring(0, endMarkerIndex);
-    endMarkerSection = body.substring(endMarkerIndex, endMarkerIndex + endMarker.length);
+    endMarkerSection = body.substring(
+      endMarkerIndex,
+      endMarkerIndex + endMarker.length
+    );
     afterEndMarker = body.substring(endMarkerIndex + endMarker.length);
   } else {
     beforeEndMarker = body;
-    endMarkerSection = '';
-    afterEndMarker = '';
+    endMarkerSection = "";
+    afterEndMarker = "";
   }
-  
+
   // Only replace in the part before the end marker
   let updatedBeforeEndMarker = beforeEndMarker;
   let searchIndex = 0;
-  
+
   while (true) {
     const linkIndex = updatedBeforeEndMarker.indexOf(linkMatch, searchIndex);
     if (linkIndex === -1) break;
-    
+
     // Check if this occurrence is within a protected spec entry block
     const beforeLink = updatedBeforeEndMarker.substring(0, linkIndex);
-    
+
     // Count unclosed START_SPEC markers before this link
-    const startMarkers = (beforeLink.match(/<!-- START_SPEC_\d+ - DO NOT EDIT CONTENT BELOW -->/g) || []).length;
-    const endMarkers = (beforeLink.match(/<!-- END_SPEC_\d+ - DO NOT EDIT CONTENT ABOVE -->/g) || []).length;
-    
+    const startMarkers = (beforeLink.match(/<!-- START_SPEC_\d+ -->/g) || [])
+      .length;
+    const endMarkers = (beforeLink.match(/<!-- END_SPEC_\d+ -->/g) || [])
+      .length;
+
     // If we have more start markers than end markers, we're inside a protected block
     if (startMarkers > endMarkers) {
       searchIndex = linkIndex + linkMatch.length;
       continue; // Skip this occurrence, it's protected
     }
-    
+
     // This occurrence is safe to replace
-    updatedBeforeEndMarker = (
+    updatedBeforeEndMarker =
       updatedBeforeEndMarker.substring(0, linkIndex) +
       referenceText +
-      updatedBeforeEndMarker.substring(linkIndex + linkMatch.length)
-    );
+      updatedBeforeEndMarker.substring(linkIndex + linkMatch.length);
     break;
   }
-  
+
   // Reconstruct the full body
   return updatedBeforeEndMarker + endMarkerSection + afterEndMarker;
 }
