@@ -53,7 +53,9 @@ ${startMarker}
 <div style="border: 2px solid #ccc; border-radius: 8px; padding: 16px; margin: 16px 0;">
 
 <a id="${specId}"></a>
-### Design Spec ${specNumber} [#](#${specId})
+
+<details>
+<summary><strong>Design Spec ${specNumber}</strong> <a href="#${specId}">#</a></summary>
 
 <kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
 
@@ -70,6 +72,8 @@ ${startMarker}
 
 **Description:** 
 
+
+</details>
 
 </details>
 
