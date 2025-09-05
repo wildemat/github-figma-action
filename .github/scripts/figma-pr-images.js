@@ -56,13 +56,20 @@ async function main() {
     // Find Figma links to process
     const figmaLinks = findFigmaLinks(prBody, specsAnalysis);
     if (figmaLinks.length === 0) {
-      console.log("No Figma links found above Design Specs section");
+      console.log("No Figma links found to process");
       return;
     }
 
-    console.log(
-      `Found ${figmaLinks.length} Figma link(s) above Design Specs section`
-    );
+    const linksAbove = figmaLinks.filter(link => !link.isInSpecsSection).length;
+    const linksWithin = figmaLinks.filter(link => link.isInSpecsSection).length;
+    
+    console.log(`Found ${figmaLinks.length} Figma link(s) to process:`);
+    if (linksAbove > 0) {
+      console.log(`  - ${linksAbove} above Design Specs section`);
+    }
+    if (linksWithin > 0) {
+      console.log(`  - ${linksWithin} within Design Specs section (unprotected areas)`);
+    }
 
     // Process each Figma link
     let updatedBody = prBody;
@@ -76,10 +83,18 @@ async function main() {
           figmaToken
         );
         specsContent += result.specSnippet;
-        updatedBody = updatedBody.replace(
-          figmaLinks[i].fullMatch,
-          result.referenceText
-        );
+        
+        // Replace with reference text or remove entirely based on location
+        if (figmaLinks[i].isInSpecsSection) {
+          // For links within Design Specs section, just remove them
+          updatedBody = updatedBody.replace(figmaLinks[i].fullMatch, '');
+        } else {
+          // For links above Design Specs section, replace with reference
+          updatedBody = updatedBody.replace(
+            figmaLinks[i].fullMatch,
+            result.referenceText
+          );
+        }
         console.log(
           `Processed Figma link ${i + 1}/${figmaLinks.length}: ${
             figmaLinks[i].url
@@ -164,24 +179,49 @@ function analyzeDesignSpecsSection(prBody) {
 }
 
 /**
- * Finds all Figma links in the content above the Design Specs section
+ * Finds all Figma links above the Design Specs section and in unprotected areas within it
  * @param {string} prBody - PR body content
- * @param {{hasSpecsSection: boolean, specsSectionIndex: number}} specsAnalysis - Design specs section analysis
- * @returns {Array<{url: string, fileId: string, nodeId: string, fullMatch: string, isMarkdownLink: boolean, linkText: string|null}>}
+ * @param {{hasSpecsSection: boolean, specsSectionIndex: number, specsEndIndex: number}} specsAnalysis - Design specs section analysis
+ * @returns {Array<{url: string, fileId: string, nodeId: string, fullMatch: string, isMarkdownLink: boolean, linkText: string|null, isInSpecsSection: boolean}>}
  */
 function findFigmaLinks(prBody, specsAnalysis) {
-  const contentToSearch = specsAnalysis.hasSpecsSection
+  const figmaLinks = [];
+
+  // 1. Search above the Design Specs section
+  const contentAboveSpecs = specsAnalysis.hasSpecsSection
     ? prBody.substring(0, specsAnalysis.specsSectionIndex)
     : prBody;
 
-  const figmaLinks = [];
+  findFigmaLinksInContent(contentAboveSpecs, figmaLinks, false);
 
+  // 2. Search within unprotected areas of Design Specs section
+  if (specsAnalysis.hasSpecsSection) {
+    const specsSectionContent = utils.extractSectionContent(
+      prBody,
+      specsAnalysis.specsSectionIndex,
+      specsAnalysis.specsEndIndex,
+      regexPatterns.NEXT_SECTION_REGEX
+    );
+
+    const unprotectedContent = utils.extractUnprotectedSpecsContent(specsSectionContent);
+    findFigmaLinksInContent(unprotectedContent, figmaLinks, true);
+  }
+
+  return figmaLinks;
+}
+
+/**
+ * Finds Figma links in a given content string and adds them to the provided array
+ * @param {string} content - Content to search in
+ * @param {Array} figmaLinks - Array to add found links to
+ * @param {boolean} isInSpecsSection - Whether the content is within the Design Specs section
+ */
+function findFigmaLinksInContent(content, figmaLinks, isInSpecsSection) {
   // Find markdown links with Figma URLs first
   let markdownMatch;
-  while (
-    (markdownMatch =
-      regexPatterns.MARKDOWN_FIGMA_LINK_REGEX.exec(contentToSearch)) !== null
-  ) {
+  const markdownRegex = new RegExp(regexPatterns.MARKDOWN_FIGMA_LINK_REGEX.source, 'g');
+  
+  while ((markdownMatch = markdownRegex.exec(content)) !== null) {
     const linkText = markdownMatch[1];
     const fullUrl = markdownMatch[2];
     const parsed = figmaApi.parseFigmaUrl(fullUrl);
@@ -194,7 +234,8 @@ function findFigmaLinks(prBody, specsAnalysis) {
           parsed.nodeId,
           markdownMatch[0], // full markdown match
           true, // isMarkdownLink
-          linkText
+          linkText,
+          isInSpecsSection
         )
       );
     }
@@ -202,10 +243,9 @@ function findFigmaLinks(prBody, specsAnalysis) {
 
   // Find standalone Figma URLs
   let standaloneMatch;
-  while (
-    (standaloneMatch = regexPatterns.FIGMA_URL_REGEX.exec(contentToSearch)) !==
-    null
-  ) {
+  const standaloneRegex = new RegExp(regexPatterns.FIGMA_URL_REGEX.source, 'g');
+  
+  while ((standaloneMatch = standaloneRegex.exec(content)) !== null) {
     const fullUrl = standaloneMatch[0];
 
     // Skip if already captured as markdown link
@@ -221,18 +261,17 @@ function findFigmaLinks(prBody, specsAnalysis) {
           parsed.nodeId,
           fullUrl, // full URL match
           false, // isMarkdownLink
-          null // no linkText for standalone URLs
+          null, // no linkText for standalone URLs
+          isInSpecsSection
         )
       );
     }
   }
-
-  return figmaLinks;
 }
 
 /**
  * Processes a single Figma link to generate spec content and reference text
- * @param {{url: string, fileId: string, nodeId: string, fullMatch: string, isMarkdownLink: boolean, linkText: string|null}} link - Figma link info
+ * @param {{url: string, fileId: string, nodeId: string, fullMatch: string, isMarkdownLink: boolean, linkText: string|null, isInSpecsSection: boolean}} link - Figma link info
  * @param {number} specNumber - Sequential spec number
  * @param {string} figmaToken - Figma API token
  * @returns {Promise<{specSnippet: string, referenceText: string}>} Generated content
@@ -276,12 +315,15 @@ async function processFigmaLink(link, specNumber, figmaToken) {
     expirationString
   );
 
-  const referenceText = utils.createReferenceText(
-    link.isMarkdownLink,
-    link.linkText,
-    specNumber,
-    specId
-  );
+  // Only create reference text for links above the Design Specs section
+  const referenceText = link.isInSpecsSection ? 
+    '' : 
+    utils.createReferenceText(
+      link.isMarkdownLink,
+      link.linkText,
+      specNumber,
+      specId
+    );
 
   return { specSnippet, referenceText };
 }

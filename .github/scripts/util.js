@@ -34,7 +34,7 @@ function convertNodeIdToColonFormat(nodeId) {
 }
 
 /**
- * Creates a design spec snippet for the Design Specs section
+ * Creates a design spec snippet for the Design Specs section with protected markers
  * @param {number} specNumber - Sequential spec number
  * @param {string} specId - Anchor ID for the spec
  * @param {string} attachmentUrl - URL of the design preview image
@@ -45,7 +45,11 @@ function convertNodeIdToColonFormat(nodeId) {
  * @returns {string} Formatted design spec markdown
  */
 function createDesignSpecSnippet(specNumber, specId, attachmentUrl, cleanUrl, versionId, snapshotTimestamp, expirationString) {
+  const startMarker = `<!-- START_SPEC_${specNumber} - DO NOT EDIT CONTENT BELOW -->`;
+  const endMarker = `<!-- END_SPEC_${specNumber} - DO NOT EDIT CONTENT ABOVE -->`;
+  
   return `
+${startMarker}
 <a id="${specId}"></a>
 ### Design Spec ${specNumber} [#](#${specId})
 
@@ -64,6 +68,7 @@ function createDesignSpecSnippet(specNumber, specId, attachmentUrl, cleanUrl, ve
 
 
 </details>
+${endMarker}
 
 `;
 }
@@ -120,17 +125,30 @@ function extractSectionContent(content, startIndex, endIndex, nextSectionRegex) 
  * @param {string} fullMatch - Complete matched text (URL or markdown link)
  * @param {boolean} isMarkdownLink - Whether this was originally a markdown link
  * @param {string|null} linkText - Text from markdown link (null for standalone URLs)
+ * @param {boolean} isInSpecsSection - Whether this link was found within the Design Specs section
  * @returns {Object} Standardized link object
  */
-function createLinkObject(url, fileId, nodeId, fullMatch, isMarkdownLink, linkText = null) {
+function createLinkObject(url, fileId, nodeId, fullMatch, isMarkdownLink, linkText = null, isInSpecsSection = false) {
   return {
     url,
     fileId,
     nodeId,
     fullMatch,
     isMarkdownLink,
-    linkText
+    linkText,
+    isInSpecsSection
   };
+}
+
+/**
+ * Extracts unprotected content from Design Specs section (content outside of spec entry markers)
+ * @param {string} specsSectionContent - Content of the Design Specs section
+ * @returns {string} Content that is not within protected spec entry markers
+ */
+function extractUnprotectedSpecsContent(specsSectionContent) {
+  // Remove all content between START_SPEC_X and END_SPEC_X markers
+  const protectedRegex = /<!-- START_SPEC_\d+ - DO NOT EDIT CONTENT BELOW -->[\s\S]*?<!-- END_SPEC_\d+ - DO NOT EDIT CONTENT ABOVE -->/g;
+  return specsSectionContent.replace(protectedRegex, '');
 }
 
 module.exports = {
@@ -141,5 +159,6 @@ module.exports = {
   createReferenceText,
   getDesignSpecsEndMarker,
   extractSectionContent,
-  createLinkObject
+  createLinkObject,
+  extractUnprotectedSpecsContent
 };
