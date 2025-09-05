@@ -9,7 +9,7 @@
 function calculateImageExpirationDate() {
   const expirationDate = new Date();
   expirationDate.setDate(expirationDate.getDate() + 30);
-  return expirationDate.toISOString().split('T')[0];
+  return expirationDate.toISOString().split("T")[0];
 }
 
 /**
@@ -44,23 +44,34 @@ function convertNodeIdToColonFormat(nodeId) {
  * @param {string} expirationString - Image expiration date
  * @returns {string} Formatted design spec markdown
  */
-function createDesignSpecSnippet(specNumber, specId, attachmentUrl, cleanUrl, versionId, snapshotTimestamp, expirationString) {
+function createDesignSpecSnippet(
+  specNumber,
+  specId,
+  attachmentUrl,
+  cleanUrl,
+  versionId,
+  snapshotTimestamp,
+  expirationString
+) {
   const startMarker = `<!-- START_SPEC_${specNumber} - DO NOT EDIT CONTENT BELOW -->`;
   const endMarker = `<!-- END_SPEC_${specNumber} - DO NOT EDIT CONTENT ABOVE -->`;
-  
+
   return `
 ${startMarker}
-<div style="border: 2px solid #ccc; border-radius: 8px; padding: 16px; margin: 16px 0;">
+
+---
 
 <a id="${specId}"></a>
 
 <details>
-<summary><strong>Design Spec ${specNumber}</strong> <a href="#${specId}">#</a></summary>
+<summary><strong>🎨 Design Spec ${specNumber}</strong> <a href="#${specId}">#</a></summary>
+
+<br>
 
 <kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
 
 <details>
-<summary>spec details</summary>
+<summary>📋 Spec Details</summary>
 
 **Design Link:** [View in Figma](${cleanUrl}) (Cmd+Click to open in new tab)
 
@@ -70,14 +81,14 @@ ${startMarker}
 
 **Image Expires:** ${expirationString}
 
-**Description:** 
-
-
-</details>
+**Description: <enter description here>**
 
 </details>
 
-</div>
+</details>
+
+---
+
 ${endMarker}
 
 `;
@@ -115,15 +126,20 @@ function getDesignSpecsEndMarker() {
  * @param {RegExp} nextSectionRegex - Regex to find next section if no end marker
  * @returns {string} Content between positions
  */
-function extractSectionContent(content, startIndex, endIndex, nextSectionRegex) {
+function extractSectionContent(
+  content,
+  startIndex,
+  endIndex,
+  nextSectionRegex
+) {
   if (endIndex > startIndex) {
     return content.substring(startIndex, endIndex);
   } else {
     const section = content.substring(startIndex);
     const nextSectionMatch = section.match(nextSectionRegex);
-    return nextSectionMatch ? 
-      section.substring(0, nextSectionMatch.index) : 
-      section;
+    return nextSectionMatch
+      ? section.substring(0, nextSectionMatch.index)
+      : section;
   }
 }
 
@@ -138,7 +154,15 @@ function extractSectionContent(content, startIndex, endIndex, nextSectionRegex) 
  * @param {boolean} isInSpecsSection - Whether this link was found within the Design Specs section
  * @returns {Object} Standardized link object
  */
-function createLinkObject(url, fileId, nodeId, fullMatch, isMarkdownLink, linkText = null, isInSpecsSection = false) {
+function createLinkObject(
+  url,
+  fileId,
+  nodeId,
+  fullMatch,
+  isMarkdownLink,
+  linkText = null,
+  isInSpecsSection = false
+) {
   return {
     url,
     fileId,
@@ -146,7 +170,7 @@ function createLinkObject(url, fileId, nodeId, fullMatch, isMarkdownLink, linkTe
     fullMatch,
     isMarkdownLink,
     linkText,
-    isInSpecsSection
+    isInSpecsSection,
   };
 }
 
@@ -157,8 +181,9 @@ function createLinkObject(url, fileId, nodeId, fullMatch, isMarkdownLink, linkTe
  */
 function extractUnprotectedSpecsContent(specsSectionContent) {
   // Remove all content between START_SPEC_X and END_SPEC_X markers
-  const protectedRegex = /<!-- START_SPEC_\d+ - DO NOT EDIT CONTENT BELOW -->[\s\S]*?<!-- END_SPEC_\d+ - DO NOT EDIT CONTENT ABOVE -->/g;
-  return specsSectionContent.replace(protectedRegex, '');
+  const protectedRegex =
+    /<!-- START_SPEC_\d+ - DO NOT EDIT CONTENT BELOW -->[\s\S]*?<!-- END_SPEC_\d+ - DO NOT EDIT CONTENT ABOVE -->/g;
+  return specsSectionContent.replace(protectedRegex, "");
 }
 
 module.exports = {
@@ -170,5 +195,5 @@ module.exports = {
   getDesignSpecsEndMarker,
   extractSectionContent,
   createLinkObject,
-  extractUnprotectedSpecsContent
+  extractUnprotectedSpecsContent,
 };
