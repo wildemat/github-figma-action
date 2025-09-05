@@ -91,6 +91,38 @@ jobs:
         run: node .figma-action/.github/scripts/figma-pr-images.js
 ```
 
+## Run Conditions
+
+This GitHub Action can be configured to run in different ways:
+
+### Default Behavior (Repository Installation)
+- Runs automatically on PR events: `opened`, `edited`
+- Processes all PRs regardless of labels
+
+### Label-Based Triggering
+To run only on PRs with a specific label, the workflow supports:
+- **Label requirement**: Add the condition `if: contains(github.event.pull_request.labels.*.name, 'ci:figma-links')` to your workflow
+- **Trigger events**: Include `labeled` in the PR trigger types to run when the label is added
+- **Use case**: Ideal for repositories where you want selective Figma processing
+
+Example workflow configuration for label-based triggering:
+
+```yaml
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+  pull_request_target:
+    types: [labeled]
+
+jobs:
+  figma-pr-images:
+    if: contains(github.event.pull_request.labels.*.name, 'ci:figma-links')
+    # ... rest of job configuration
+```
+
+### Workflow Call Integration
+The action also supports being called from other workflows using `workflow_call`, allowing for complex automation pipelines.
+
 ## Setup
 
 ### 1. Get Figma API Token
