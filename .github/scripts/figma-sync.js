@@ -41,52 +41,52 @@ async function main() {
     );
   }
 
-  // Check if Screenshots section exists and count existing screenshots
-  const screenshotsRegex = /## Screenshots/i;
-  const hasScreenshotsSection = screenshotsRegex.test(prBody);
-  const screenshotsEndMarker =
-    "<!-- END_SCREENSHOTS - WILL NOT DETECT FIGMA LINKS BELOW THIS LINE -->";
+  // Check if Design Specs section exists and count existing specs
+  const specsRegex = /## Design Specs/i;
+  const hasSpecsSection = specsRegex.test(prBody);
+  const specsEndMarker =
+    "<!-- END_DESIGN_SPECS - WILL NOT DETECT FIGMA LINKS BELOW THIS LINE -->";
 
-  let screenshotsSectionIndex = -1;
-  let existingScreenshotCount = 0;
-  let screenshotsEndIndex = -1;
+  let specsSectionIndex = -1;
+  let existingSpecCount = 0;
+  let specsEndIndex = -1;
 
-  if (hasScreenshotsSection) {
-    screenshotsSectionIndex = prBody.search(screenshotsRegex);
-    screenshotsEndIndex = prBody.indexOf(screenshotsEndMarker);
+  if (hasSpecsSection) {
+    specsSectionIndex = prBody.search(specsRegex);
+    specsEndIndex = prBody.indexOf(specsEndMarker);
 
-    // Count existing figma links in the Screenshots section
-    let screenshotsSectionContent;
-    if (screenshotsEndIndex > screenshotsSectionIndex) {
-      // Use content between ## Screenshots and the end marker
-      screenshotsSectionContent = prBody.substring(
-        screenshotsSectionIndex,
-        screenshotsEndIndex
+    // Count existing figma links in the Design Specs section
+    let specsSectionContent;
+    if (specsEndIndex > specsSectionIndex) {
+      // Use content between ## Design Specs and the end marker
+      specsSectionContent = prBody.substring(
+        specsSectionIndex,
+        specsEndIndex
       );
     } else {
       // No end marker found, use until next section or end of body
-      const screenshotsSection = prBody.substring(screenshotsSectionIndex);
-      const nextSectionMatch = screenshotsSection.match(/\n## /);
-      screenshotsSectionContent = nextSectionMatch
-        ? screenshotsSection.substring(0, nextSectionMatch.index)
-        : screenshotsSection;
+      const specsSection = prBody.substring(specsSectionIndex);
+      const nextSectionMatch = specsSection.match(/\n## /);
+      specsSectionContent = nextSectionMatch
+        ? specsSection.substring(0, nextSectionMatch.index)
+        : specsSection;
     }
 
-    const existingFigmaLinks = screenshotsSectionContent.match(
+    const existingFigmaLinks = specsSectionContent.match(
       /https:\/\/www\.figma\.com\/design\/[^\s)]+/g
     );
-    existingScreenshotCount = existingFigmaLinks
+    existingSpecCount = existingFigmaLinks
       ? existingFigmaLinks.length
       : 0;
 
     console.log(
-      `Found ${existingScreenshotCount} existing figma link(s) in Screenshots section`
+      `Found ${existingSpecCount} existing figma link(s) in Design Specs section`
     );
   }
 
-  // Only look for Figma URLs above the Screenshots section (or entire body if no section exists)
-  const contentToSearch = hasScreenshotsSection
-    ? prBody.substring(0, screenshotsSectionIndex)
+  // Only look for Figma URLs above the Design Specs section (or entire body if no section exists)
+  const contentToSearch = hasSpecsSection
+    ? prBody.substring(0, specsSectionIndex)
     : prBody;
 
   // Regex to find Figma URLs - captures the complete URL until whitespace or closing parenthesis
@@ -148,16 +148,16 @@ async function main() {
   }
 
   if (figmaLinks.length === 0) {
-    console.log("No Figma links found above Screenshots section");
+    console.log("No Figma links found above Design Specs section");
     return;
   }
 
   console.log(
-    `Found ${figmaLinks.length} Figma link(s) above Screenshots section`
+    `Found ${figmaLinks.length} Figma link(s) above Design Specs section`
   );
 
   let updatedBody = prBody;
-  let screenshotsContent = "";
+  let specsContent = "";
 
   for (let i = 0; i < figmaLinks.length; i++) {
     const link = figmaLinks[i];
@@ -212,9 +212,9 @@ async function main() {
 
       const attachmentUrl = imageUrl;
 
-      // Create screenshot entry for Screenshots section (continue numbering from existing screenshots)
-      const screenshotNumber = existingScreenshotCount + i + 1;
-      const screenshotId = `screenshot-${screenshotNumber}`;
+      // Create spec entry for Design Specs section (continue numbering from existing specs)
+      const specNumber = existingSpecCount + i + 1;
+      const specId = `spec-${specNumber}`;
       // Clean the URL to include essential parameters and version-id
       const cleanUrl = `https://www.figma.com/design/${
         link.fileId
@@ -222,13 +222,13 @@ async function main() {
         latestVersion.id
       }&m=dev`;
 
-      const screenshotSnippet = `
-### Screenshot ${screenshotNumber}
+      const specSnippet = `
+### Design Spec ${specNumber}
 
 <kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
 
 <details>
-<summary>screenshot details</summary>
+<summary>spec details</summary>
 
 **Design Link:** <a href="${cleanUrl}" target="_blank">View in Figma</a>
 
@@ -243,16 +243,16 @@ async function main() {
 
 `;
 
-      screenshotsContent += screenshotSnippet;
+      specsContent += specSnippet;
 
       // Replace the original Figma URL/link with a reference
       let referenceText;
       if (link.isMarkdownLink) {
-        // For markdown links: [text](url) becomes "text ([Refer to Screenshot X below](#screenshot-x))"
-        referenceText = `${link.linkText} ([Refer to Screenshot ${screenshotNumber} below](#${screenshotId}))`;
+        // For markdown links: [text](url) becomes "text ([Refer to Design Spec X below](#spec-x))"
+        referenceText = `${link.linkText} ([Refer to Design Spec ${specNumber} below](#${specId}))`;
       } else {
-        // For standalone URLs: url becomes "[Refer to Screenshot X below](#screenshot-x)"
-        referenceText = `[Refer to Screenshot ${screenshotNumber} below](#${screenshotId})`;
+        // For standalone URLs: url becomes "[Refer to Design Spec X below](#spec-x)"
+        referenceText = `[Refer to Design Spec ${specNumber} below](#${specId})`;
       }
       updatedBody = updatedBody.replace(link.fullMatch, referenceText);
 
@@ -264,49 +264,49 @@ async function main() {
     }
   }
 
-  // Add or update Screenshots section
-  if (screenshotsContent) {
-    if (hasScreenshotsSection) {
-      // Append to existing Screenshots section before the end marker
-      if (screenshotsEndIndex > screenshotsSectionIndex) {
+  // Add or update Design Specs section
+  if (specsContent) {
+    if (hasSpecsSection) {
+      // Append to existing Design Specs section before the end marker
+      if (specsEndIndex > specsSectionIndex) {
         // Insert before the end marker
         updatedBody =
-          updatedBody.substring(0, screenshotsEndIndex) +
-          screenshotsContent +
-          updatedBody.substring(screenshotsEndIndex);
+          updatedBody.substring(0, specsEndIndex) +
+          specsContent +
+          updatedBody.substring(specsEndIndex);
       } else {
-        // No end marker found, create one at the end of the Screenshots section
-        const afterScreenshotsSection = updatedBody.substring(
-          screenshotsSectionIndex
+        // No end marker found, create one at the end of the Design Specs section
+        const afterSpecsSection = updatedBody.substring(
+          specsSectionIndex
         );
-        const nextSectionMatch = afterScreenshotsSection.match(/\n## /);
+        const nextSectionMatch = afterSpecsSection.match(/\n## /);
 
         if (nextSectionMatch) {
-          // There's another section after Screenshots - insert end marker before it
+          // There's another section after Design Specs - insert end marker before it
           const nextSectionIndex =
-            screenshotsSectionIndex + nextSectionMatch.index;
+            specsSectionIndex + nextSectionMatch.index;
           updatedBody =
             updatedBody.substring(0, nextSectionIndex) +
-            `\n${screenshotsEndMarker}` +
+            `\n${specsEndMarker}` +
             updatedBody.substring(nextSectionIndex);
 
           // Now append new content before the newly created end marker
-          const newEndMarkerIndex = updatedBody.indexOf(screenshotsEndMarker);
+          const newEndMarkerIndex = updatedBody.indexOf(specsEndMarker);
           updatedBody =
             updatedBody.substring(0, newEndMarkerIndex) +
-            screenshotsContent +
+            specsContent +
             updatedBody.substring(newEndMarkerIndex);
         } else {
-          // Screenshots is the last section, append content and end marker at the end
-          updatedBody += screenshotsContent + `\n${screenshotsEndMarker}`;
+          // Design Specs is the last section, append content and end marker at the end
+          updatedBody += specsContent + `\n${specsEndMarker}`;
         }
       }
     } else {
-      // Create new Screenshots section at the end
-      updatedBody += `\n## Screenshots\n${screenshotsContent}\n${screenshotsEndMarker}`;
+      // Create new Design Specs section at the end
+      updatedBody += `\n## Design Specs\n${specsContent}\n${specsEndMarker}`;
     }
     console.log(
-      `Added ${figmaLinks.length} screenshot(s) to Screenshots section`
+      `Added ${figmaLinks.length} design spec(s) to Design Specs section`
     );
   }
 
