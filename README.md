@@ -10,13 +10,15 @@ Github Workflow which processes Figma design links in PR descriptions to organiz
 
 ## Features
 
-- Scans PR descriptions for Figma URLs (above and within the Design Specs section)
-- Fetches version info and timestamps from Figma API
-- Replaces original Figma URLs with references to organized Design Specs section
-- Embeds preview images with 30-day expiration from Figma's temporary URLs
-- Organizes all design specs in a dedicated section with collapsible details
-- Prevents duplicate entries and maintains proper numbering
-- Includes blank description fields for manual editing
+- **Smart Link Processing**: Scans PR descriptions for Figma URLs (above and within the Design Specs section)
+- **Version Tracking**: Fetches version info and timestamps from Figma API automatically
+- **Clean Organization**: Replaces original Figma URLs with numbered references to organized Design Specs section
+- **Preview Images**: Embeds preview images with 30-day expiration from Figma's temporary URLs
+- **Collapsible Design**: Organizes all design specs in visually separated, collapsible sections
+- **Duplicate Prevention**: Maintains proper numbering and prevents duplicate entries
+- **Flexible Headers**: Supports any heading level (# through ######) for "Design Specs" sections
+- **Template Friendly**: Safe for GitHub issue templates - respects section boundaries
+- **Manual Editing**: Includes blank description fields for custom annotations
 
 ## Installation
 
@@ -279,20 +281,29 @@ yarn test:coverage-json
 
 Tests run automatically on every push and pull request via GitHub Actions. The workflow:
 
-- Runs tests on Node.js 21
-- Generates coverage reports
-- Updates the coverage badge on the main branch
-- Enforces minimum 70% coverage thresholds
+- Runs tests on Node.js 21 using Yarn for dependency management
+- Generates comprehensive coverage reports with Jest
+- Updates the coverage badge on the main branch automatically
+- Displays coverage summaries in GitHub Actions job summaries
+- Posts detailed coverage comments on pull requests
+- Enforces minimum 5% coverage thresholds (current baseline)
 
-### Test Coverage
+### Coverage Reporting
 
-The test suite covers:
+**Multiple ways to view coverage:**
 
+1. **README Badge**: Live coverage percentage updated automatically
+2. **GitHub Actions Summary**: Detailed coverage data in workflow run summaries
+3. **Pull Request Comments**: Automatic coverage table with file-by-file breakdown
+4. **Local Development**: Run `yarn test:coverage` for detailed terminal output
+
+**Current Test Coverage:**
 - Figma URL parsing and validation
-- API response mocking for offline testing
-- Design spec snippet generation
-- Reference text creation
-- Link object creation
+- API response mocking for offline testing  
+- Design spec snippet generation with collapsible details
+- Reference text creation for both standalone and markdown links
+- Link object creation and manipulation
 - Date calculations and URL formatting
+- Clean Figma URL generation
 
-Coverage results are automatically updated and displayed in the badge above. The CI enforces minimum coverage thresholds of 70% for branches, functions, lines, and statements.
+The test suite uses Jest with comprehensive mocking of Figma API calls, ensuring tests run reliably without external dependencies. Coverage thresholds are set to current baseline levels and will be increased as test coverage improves.
