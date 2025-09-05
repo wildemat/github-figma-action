@@ -2,6 +2,7 @@
   "name": "figma-pr-sync",
   "version": "1.0.0",
   "description": "GitHub Action to sync Figma designs in PR descriptions",
+  "license": "MIT",
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",

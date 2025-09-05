@@ -6,7 +6,7 @@
 
 [![Coverage](https://raw.githubusercontent.com/wildemat/github-figma-action/main/coverage/coverage-badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
 
-Automatically processes Figma design links in GitHub PR descriptions, replacing them with organized design specifications and previews.
+Github Workflow which processes Figma design links in PR descriptions to organized preview sections with versioning.
 
 ## Features
 

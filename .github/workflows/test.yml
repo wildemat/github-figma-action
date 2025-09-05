@@ -21,7 +21,7 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Run tests with coverage
         run: yarn test:coverage
@@ -38,11 +38,11 @@ jobs:
           ls -la coverage/
           cat coverage/coverage-summary.json
 
-      - name: Commit coverage badge
+      - name: Commit coverage badge and lockfile
         if: github.ref == 'refs/heads/main'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add coverage/coverage-badge.svg
-          git diff --staged --quiet || git commit -m "Update coverage badge"
+          git add coverage/coverage-badge.svg yarn.lock
+          git diff --staged --quiet || git commit -m "Update coverage badge and lockfile"
           git push
