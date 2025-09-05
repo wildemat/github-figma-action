@@ -227,6 +227,13 @@ Content within these markers is never modified by the script, ensuring your gene
 6. **Uses existing version if specified** - If URL contains `version-id` parameter, uses that instead of fetching latest
 7. **Includes description field** - Each spec includes a blank **Description:** field for manual editing
 
+### Safe for Issue Templates
+
+You can safely include `## Design Specs` in your GitHub issue templates. The action:
+- **Respects section boundaries** - Only processes content within the Design Specs section 
+- **Stops at next heading** - Processing ends when it encounters the next section heading of the same level (e.g., another `##` heading)
+- **Won't interfere** - Other template sections like "## Steps to Reproduce" or "## Expected Behavior" remain untouched
+
 ### Image Expiration
 
 - Figma API image URLs expire after **30 days**
