@@ -3,12 +3,42 @@
   "version": "1.0.0",
   "description": "GitHub Action to sync Figma designs in PR descriptions",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:coverage-json": "jest --coverage --coverageReporters=json-summary"
   },
   "dependencies": {
     "axios": "^1.6.0"
   },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
   "engines": {
     "node": ">=21"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      ".github/scripts/*.js",
+      "!.github/scripts/test/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "json-summary",
+      "json"
+    ],
+    "testMatch": [
+      "**/.github/scripts/test/**/*.test.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
   }
 }

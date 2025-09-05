@@ -1,6 +1,8 @@
 # GitHub Figma PR Images
 
 [![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/)
+[![Tests](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml/badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
+[![Coverage](https://raw.githubusercontent.com/wildemat/github-figma-action/main/coverage/coverage-badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
 
 Automatically processes Figma design links in GitHub PR descriptions, replacing them with organized design specifications and previews.
 
@@ -239,3 +241,40 @@ You can safely include `## Design Specs` in your GitHub issue templates. The act
 - Figma API image URLs expire after **30 days**
 - The expiration date is displayed in each design spec
 - After expiration, images will show as broken links but the Figma design links remain functional
+
+## Testing
+
+This project uses Jest for testing with comprehensive coverage of the core functionality.
+
+### Running Tests Locally
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Generate JSON coverage summary
+npm run test:coverage-json
+```
+
+### Continuous Integration
+
+Tests run automatically on every push and pull request via GitHub Actions. The workflow:
+- Runs tests on Node.js 21
+- Generates coverage reports
+- Updates the coverage badge on the main branch
+- Enforces minimum 70% coverage thresholds
+
+### Test Coverage
+
+The test suite covers:
+- Figma URL parsing and validation
+- API response mocking for offline testing
+- Design spec snippet generation
+- Reference text creation
+- Link object creation
+- Date calculations and URL formatting
+
+Coverage results are automatically updated and displayed in the badge above. The CI enforces minimum coverage thresholds of 70% for branches, functions, lines, and statements.

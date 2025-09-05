@@ -59,8 +59,6 @@ function createDesignSpecSnippet(
   return `
 ${startMarker}
 
----
-
 <a id="${specId}"></a>
 
 <details>
