@@ -1,10 +1,12 @@
-[![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/) |
-[![Tests](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml/badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml) |
+[![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/)
+[![Tests](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml/badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
 [![Coverage](https://raw.githubusercontent.com/wildemat/github-figma-action/main/coverage/coverage-badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
 
-# GitHub Figma PR Images
+# Figma PR Images - Github Action
 
-Copy and paste figma node links into your PR, and convert them to versioned screenshots!
+Figma links and screenshots in PRs can become outdated as designs change while a PR is open.
+
+With this Github Action, copy and paste any number of figma node links into your PR and receive a nice, versioned outline of relevant design specs.
 
 ## Before and after
 
