@@ -84,17 +84,11 @@ async function main() {
         );
         specsContent += result.specSnippet;
         
-        // Replace with reference text or remove entirely based on location
-        if (figmaLinks[i].isInSpecsSection) {
-          // For links within Design Specs section, just remove them
-          updatedBody = updatedBody.replace(figmaLinks[i].fullMatch, '');
-        } else {
-          // For links above Design Specs section, replace with reference
-          updatedBody = updatedBody.replace(
-            figmaLinks[i].fullMatch,
-            result.referenceText
-          );
-        }
+        // Replace all links with reference text
+        updatedBody = updatedBody.replace(
+          figmaLinks[i].fullMatch,
+          result.referenceText
+        );
         console.log(
           `Processed Figma link ${i + 1}/${figmaLinks.length}: ${
             figmaLinks[i].url
@@ -313,15 +307,13 @@ async function processFigmaLink(link, specNumber, figmaToken) {
     expirationString
   );
 
-  // Only create reference text for links above the Design Specs section
-  const referenceText = link.isInSpecsSection ? 
-    '' : 
-    utils.createReferenceText(
-      link.isMarkdownLink,
-      link.linkText,
-      specNumber,
-      specId
-    );
+  // Create reference text for all links (both above and within Design Specs section)
+  const referenceText = utils.createReferenceText(
+    link.isMarkdownLink,
+    link.linkText,
+    specNumber,
+    specId
+  );
 
   return { specSnippet, referenceText };
 }

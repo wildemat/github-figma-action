@@ -66,6 +66,8 @@ ${startMarker}
 
 **Image Expires:** ${expirationString}
 
+**Description:** 
+
 
 </details>
 ${endMarker}
