@@ -336,12 +336,15 @@ function updateDesignSpecsSection(body, specsContent, specsAnalysis) {
   const endMarker = utils.getDesignSpecsEndMarker();
 
   if (specsAnalysis.hasSpecsSection) {
-    if (specsAnalysis.specsEndIndex > specsAnalysis.specsSectionIndex) {
+    // Recalculate end marker position in case body was modified by link replacements
+    const currentEndMarkerIndex = body.indexOf(endMarker);
+    
+    if (currentEndMarkerIndex > specsAnalysis.specsSectionIndex) {
       // End marker exists - insert content before it
       return (
-        body.substring(0, specsAnalysis.specsEndIndex) +
+        body.substring(0, currentEndMarkerIndex) +
         specsContent +
-        body.substring(specsAnalysis.specsEndIndex)
+        body.substring(currentEndMarkerIndex)
       );
     } else {
       // No end marker - find end of Design Specs section and add content + marker
