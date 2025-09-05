@@ -1,7 +1,9 @@
 # GitHub Figma PR Images
 
 [![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/)
+
 [![Tests](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml/badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
+
 [![Coverage](https://raw.githubusercontent.com/wildemat/github-figma-action/main/coverage/coverage-badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
 
 Automatically processes Figma design links in GitHub PR descriptions, replacing them with organized design specifications and previews.
@@ -94,6 +96,7 @@ Visit **https://www.figma.com/settings** and follow these steps:
 ### 2. Add GitHub Secret
 
 In your repository, go to **Settings → Secrets and variables → Actions** and add:
+
 - **Name**: `FIGMA_TOKEN`
 - **Value**: The token you copied from Figma
 
@@ -106,7 +109,8 @@ Create a PR with a Figma URL in the description to verify the action works corre
 ### 1. Adding Figma Links
 
 Paste Figma design URLs anywhere in your PR description. The script processes:
-- Links **above** the Design Specs section 
+
+- Links **above** the Design Specs section
 - Links **within** the Design Specs section (in unprotected areas)
 - Links **below** the Design Specs section are ignored
 
@@ -141,7 +145,9 @@ And another view ([Refer to Design Spec 2 below](#design-spec-2))
 ## Design Specs
 
 <!-- START_SPEC_1 - DO NOT EDIT CONTENT BELOW -->
+
 <a id="design-spec-1"></a>
+
 ### Design Spec 1 [#](#design-spec-1)
 
 <kbd><img alt="Figma Design Preview" src="https://figma-alpha-api.s3.us-west-2.amazonaws.com/..." /></kbd>
@@ -157,14 +163,15 @@ And another view ([Refer to Design Spec 2 below](#design-spec-2))
 
 **Image Expires:** 2025-10-05
 
-**Description:** 
-
+**Description:**
 
 </details>
 <!-- END_SPEC_1 - DO NOT EDIT CONTENT ABOVE -->
 
 <!-- START_SPEC_2 - DO NOT EDIT CONTENT BELOW -->
+
 <a id="design-spec-2"></a>
+
 ### Design Spec 2 [#](#design-spec-2)
 
 <!-- ... similar structure ... -->
@@ -182,10 +189,15 @@ The script looks for "Design Specs" headings in any of these formats (case-insen
 
 ```markdown
 # Design Specs
-## Design Specs  
+
+## Design Specs
+
 ### design specs
+
 #### DESIGN SPECS
+
 ##### Design specs
+
 ###### design Specs
 ```
 
@@ -232,7 +244,8 @@ Content within these markers is never modified by the script, ensuring your gene
 ### Safe for Issue Templates
 
 You can safely include `## Design Specs` in your GitHub issue templates. The action:
-- **Respects section boundaries** - Only processes content within the Design Specs section 
+
+- **Respects section boundaries** - Only processes content within the Design Specs section
 - **Stops at next heading** - Processing ends when it encounters the next section heading of the same level (e.g., another `##` heading)
 - **Won't interfere** - Other template sections like "## Steps to Reproduce" or "## Expected Behavior" remain untouched
 
@@ -262,6 +275,7 @@ npm run test:coverage-json
 ### Continuous Integration
 
 Tests run automatically on every push and pull request via GitHub Actions. The workflow:
+
 - Runs tests on Node.js 21
 - Generates coverage reports
 - Updates the coverage badge on the main branch
@@ -270,6 +284,7 @@ Tests run automatically on every push and pull request via GitHub Actions. The w
 ### Test Coverage
 
 The test suite covers:
+
 - Figma URL parsing and validation
 - API response mocking for offline testing
 - Design spec snippet generation
