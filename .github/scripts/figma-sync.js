@@ -83,17 +83,30 @@ async function main() {
         continue;
       }
 
-      // Download the image and convert to base64
+      // Download the image
       console.log(`Downloading image for ${link.url}...`);
       const imageData = await axios.get(imageUrl, {
         responseType: "arraybuffer",
       });
-      const base64Image = Buffer.from(imageData.data, "binary").toString(
-        "base64"
-      );
-      const dataUri = `data:image/png;base64,${base64Image}`;
 
-      // Create markdown snippet with embedded image
+      // Upload image to GitHub user-attachments
+      console.log("Uploading image to GitHub...");
+      const uploadResponse = await axios.post(
+        "https://api.github.com/user/attachments",
+        imageData.data,
+        {
+          headers: {
+            Authorization: `token ${githubToken}`,
+            "Content-Type": "image/png",
+            "Content-Length": imageData.data.length,
+          },
+        }
+      );
+
+      const attachmentUrl = uploadResponse.data.url;
+      console.log(`Image uploaded: ${attachmentUrl}`);
+
+      // Create markdown snippet with GitHub attachment URL
       const figmaSnippet = `
 ## Figma Design Reference
 
@@ -104,7 +117,7 @@ async function main() {
 **Snapshot Timestamp:** ${latestVersion.created_at}
 
 **Preview:**
-![Figma Design](${dataUri})
+<kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
 
 ---
 `;
