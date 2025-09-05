@@ -1,4 +1,4 @@
-# GitHub Figma Action
+# GitHub Figma PR Images
 
 Automatically processes Figma design links in GitHub PR descriptions, replacing them with organized design specifications and previews.
 
@@ -15,17 +15,17 @@ Automatically processes Figma design links in GitHub PR descriptions, replacing 
 
 ### Option 1: Reusable Workflow (Recommended)
 
-1. In your repository, create `.github/workflows/figma-sync.yml`:
+1. In your repository, create `.github/workflows/figma-pr-images.yml`:
 
 ```yaml
-name: Figma PR Sync
+name: Figma PR Images
 
 on:
   pull_request:
     types: [opened, edited]
 
 jobs:
-  figma-sync:
+  figma-pr-images:
     uses: wildemat/github-figma-action/.github/workflows/reusable-figma-sync.yml@main
     secrets:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
@@ -42,17 +42,17 @@ jobs:
 git subtree add --prefix=.figma-action https://github.com/wildemat/github-figma-action.git main --squash
 ```
 
-Then create `.github/workflows/figma-sync.yml`:
+Then create `.github/workflows/figma-pr-images.yml`:
 
 ```yaml
-name: Figma PR Sync
+name: Figma PR Images
 
 on:
   pull_request:
     types: [opened, edited]
 
 jobs:
-  sync-figma:
+  figma-pr-images:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,7 +69,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BODY: ${{ github.event.pull_request.body }}
-        run: node .figma-action/.github/scripts/figma-sync.js
+        run: node .figma-action/.github/scripts/figma-pr-images.js
 ```
 
 ## Setup

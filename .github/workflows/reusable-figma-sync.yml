@@ -1,4 +1,4 @@
-name: Reusable Figma PR Sync
+name: Reusable Figma PR Images
 
 on:
   workflow_call:
@@ -7,7 +7,7 @@ on:
         required: true
 
 jobs:
-  sync-figma:
+  figma-pr-images:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -38,4 +38,4 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BODY: ${{ github.event.pull_request.body }}
-        run: node .figma-action/.github/scripts/figma-sync-refactored.js
+        run: node .figma-action/.github/scripts/figma-pr-images.js

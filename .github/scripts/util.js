@@ -112,6 +112,27 @@ function extractSectionContent(content, startIndex, endIndex, nextSectionRegex) 
   }
 }
 
+/**
+ * Creates a standardized link object from parsed Figma URL components
+ * @param {string} url - Original Figma URL
+ * @param {string} fileId - Figma file ID
+ * @param {string} nodeId - Figma node ID (in colon format)
+ * @param {string} fullMatch - Complete matched text (URL or markdown link)
+ * @param {boolean} isMarkdownLink - Whether this was originally a markdown link
+ * @param {string|null} linkText - Text from markdown link (null for standalone URLs)
+ * @returns {Object} Standardized link object
+ */
+function createLinkObject(url, fileId, nodeId, fullMatch, isMarkdownLink, linkText = null) {
+  return {
+    url,
+    fileId,
+    nodeId,
+    fullMatch,
+    isMarkdownLink,
+    linkText
+  };
+}
+
 module.exports = {
   calculateImageExpirationDate,
   createCleanFigmaUrl,
@@ -119,5 +140,6 @@ module.exports = {
   createDesignSpecSnippet,
   createReferenceText,
   getDesignSpecsEndMarker,
-  extractSectionContent
+  extractSectionContent,
+  createLinkObject
 };
