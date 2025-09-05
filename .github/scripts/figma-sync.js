@@ -89,24 +89,17 @@ async function main() {
         responseType: "arraybuffer",
       });
 
-      // Upload image to GitHub user-attachments
-      console.log("Uploading image to GitHub...");
-      const uploadResponse = await axios.post(
-        "https://api.github.com/user/attachments",
-        imageData.data,
-        {
-          headers: {
-            Authorization: `token ${githubToken}`,
-            "Content-Type": "image/png",
-            "Content-Length": imageData.data.length,
-          },
-        }
-      );
+      // Use the temporary Figma URL (valid for 30 days)
+      console.log(`Using Figma image URL (expires in 30 days): ${imageUrl}`);
+      
+      // Calculate expiration date (30 days from now)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 30);
+      const expirationString = expirationDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      
+      const attachmentUrl = imageUrl;
 
-      const attachmentUrl = uploadResponse.data.url;
-      console.log(`Image uploaded: ${attachmentUrl}`);
-
-      // Create markdown snippet with GitHub attachment URL
+      // Create markdown snippet with expiration timestamp
       const figmaSnippet = `
 ## Figma Design Reference
 
@@ -115,6 +108,8 @@ async function main() {
 **Version:** ${latestVersion.id}
 
 **Snapshot Timestamp:** ${latestVersion.created_at}
+
+**Image Expires:** ${expirationString}
 
 **Preview:**
 <kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
