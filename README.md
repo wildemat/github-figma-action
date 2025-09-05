@@ -1,6 +1,6 @@
 # GitHub Figma PR Images
 
-[![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/)
+[![Created with Claude](https://img.shields.io/badge/🤖%20Created%20with%20assistance%20from-Claude%20AI-FF6B35?style=flat)](https://claude.ai/) <sub>Evidence of vibe coding present 😎</sub>
 
 [![Tests](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml/badge.svg)](https://github.com/wildemat/github-figma-action/actions/workflows/test.yml)
 
