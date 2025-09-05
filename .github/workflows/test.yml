@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
     
     steps:
       - name: Checkout code
@@ -71,6 +74,9 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
+          echo "Current git status:"
+          git status
+          
           # Add yarn.lock if it exists
           if [ -f yarn.lock ]; then
             git add yarn.lock
@@ -83,10 +89,16 @@ jobs:
             echo "Added coverage badge"
           fi
           
+          echo "Staged changes:"
+          git status --porcelain --staged
+          
           # Only commit and push if there are staged changes
           if ! git diff --staged --quiet; then
+            echo "Committing changes..."
             git commit -m "Update coverage badge and lockfile"
+            echo "Pushing to remote..."
             git push
+            echo "Push completed successfully"
           else
             echo "No changes to commit"
           fi
