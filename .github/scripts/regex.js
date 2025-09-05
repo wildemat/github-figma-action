@@ -42,9 +42,9 @@ const VERSION_ID_REGEX = /version-id=([^&\s)]+)/;
 
 // Section and content patterns
 
-// Example input: "## Design Specs" or "## design specs"
-// Example output: Match "## Design Specs"
-const DESIGN_SPECS_SECTION_REGEX = /## Design Specs/i;
+// Example input: "## Design Specs", "### design specs", "# Design Specs"
+// Example output: Match "## Design Specs", "### design specs", "# Design Specs"
+const DESIGN_SPECS_SECTION_REGEX = /^#{1,6}\s+Design\s+Specs\s*$/im;
 
 // Example input: "Some content\n## Next Section"
 // Example output: Match "\n## " (to find where next section starts)

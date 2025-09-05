@@ -84,8 +84,9 @@ async function main() {
         );
         specsContent += result.specSnippet;
         
-        // Replace all links with reference text
-        updatedBody = updatedBody.replace(
+        // Replace link with reference text using safe replacement to avoid corrupting protected areas
+        updatedBody = safeReplaceLink(
+          updatedBody,
           figmaLinks[i].fullMatch,
           result.referenceText
         );
@@ -139,6 +140,12 @@ async function main() {
  * @returns {{hasSpecsSection: boolean, specsSectionIndex: number, specsEndIndex: number, existingSpecCount: number}}
  */
 function analyzeDesignSpecsSection(prBody) {
+  // Check for multiple Design Specs sections
+  const designSpecsMatches = prBody.match(new RegExp(regexPatterns.DESIGN_SPECS_SECTION_REGEX.source, 'gim'));
+  if (designSpecsMatches && designSpecsMatches.length > 1) {
+    throw new Error(`Found ${designSpecsMatches.length} Design Specs sections. Only one is allowed. Please consolidate into a single "Design Specs" section.`);
+  }
+
   const hasSpecsSection = regexPatterns.DESIGN_SPECS_SECTION_REGEX.test(prBody);
   const endMarker = utils.getDesignSpecsEndMarker();
 
@@ -361,6 +368,50 @@ function updateDesignSpecsSection(body, specsContent, specsAnalysis) {
     // Create new Design Specs section
     return body + `\n## Design Specs\n${specsContent}\n${endMarker}`;
   }
+}
+
+/**
+ * Safely replaces a Figma link with reference text, avoiding replacement in protected areas
+ * @param {string} body - Full PR body content
+ * @param {string} linkMatch - The exact link text to replace
+ * @param {string} referenceText - The reference text to replace it with
+ * @returns {string} Updated PR body
+ */
+function safeReplaceLink(body, linkMatch, referenceText) {
+  // Use a more precise replacement approach to avoid corrupting protected content
+  // Split the body and only replace in the first occurrence that's not in a protected block
+  
+  let updatedBody = body;
+  let searchIndex = 0;
+  
+  while (true) {
+    const linkIndex = updatedBody.indexOf(linkMatch, searchIndex);
+    if (linkIndex === -1) break;
+    
+    // Check if this occurrence is within a protected block
+    const beforeLink = updatedBody.substring(0, linkIndex);
+    const afterLink = updatedBody.substring(linkIndex + linkMatch.length);
+    
+    // Count unclosed START_SPEC markers before this link
+    const startMarkers = (beforeLink.match(/<!-- START_SPEC_\d+ - DO NOT EDIT CONTENT BELOW -->/g) || []).length;
+    const endMarkers = (beforeLink.match(/<!-- END_SPEC_\d+ - DO NOT EDIT CONTENT ABOVE -->/g) || []).length;
+    
+    // If we have more start markers than end markers, we're inside a protected block
+    if (startMarkers > endMarkers) {
+      searchIndex = linkIndex + linkMatch.length;
+      continue; // Skip this occurrence, it's protected
+    }
+    
+    // This occurrence is safe to replace
+    updatedBody = (
+      updatedBody.substring(0, linkIndex) +
+      referenceText +
+      updatedBody.substring(linkIndex + linkMatch.length)
+    );
+    break;
+  }
+  
+  return updatedBody;
 }
 
 /**
