@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: read
+      pull-requests: write
     
     steps:
       - name: Checkout code
@@ -36,6 +36,83 @@ jobs:
 
       - name: Run tests with coverage
         run: yarn test:coverage
+
+      - name: Display coverage summary
+        run: |
+          echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "```json" >> $GITHUB_STEP_SUMMARY
+            cat coverage/coverage-summary.json >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Coverage Badge Updated:** $(date)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment coverage summary on PR
+        if: github.event_name == 'pull_request' && github.event.action != 'closed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            if (!fs.existsSync('coverage/coverage-summary.json')) {
+              console.log('No coverage summary found');
+              return;
+            }
+            
+            const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+            const total = coverage.total;
+            
+            const comment = `## 📊 Test Coverage Summary
+            
+            | Metric | Percentage | Covered | Total |
+            |--------|------------|---------|-------|
+            | **Statements** | ${total.statements.pct}% | ${total.statements.covered} | ${total.statements.total} |
+            | **Branches** | ${total.branches.pct}% | ${total.branches.covered} | ${total.branches.total} |
+            | **Functions** | ${total.functions.pct}% | ${total.functions.covered} | ${total.functions.total} |
+            | **Lines** | ${total.lines.pct}% | ${total.lines.covered} | ${total.lines.total} |
+            
+            <details>
+            <summary>📁 File Coverage Details</summary>
+            
+            \`\`\`json
+            ${JSON.stringify(coverage, null, 2)}
+            \`\`\`
+            
+            </details>
+            
+            ---
+            *Coverage report generated on ${new Date().toISOString()}*`;
+            
+            // Find existing coverage comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.body.includes('## 📊 Test Coverage Summary')
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
 
       - name: Generate coverage badge
         uses: tj-actions/coverage-badge-js@v2
