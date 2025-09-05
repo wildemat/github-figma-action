@@ -214,7 +214,7 @@ async function main() {
 
       // Create spec entry for Design Specs section (continue numbering from existing specs)
       const specNumber = existingSpecCount + i + 1;
-      const specId = `spec-${specNumber}`;
+      const specId = `design-spec-${specNumber}`;
       // Clean the URL to include essential parameters and version-id
       const cleanUrl = `https://www.figma.com/design/${
         link.fileId
@@ -223,14 +223,14 @@ async function main() {
       }&m=dev`;
 
       const specSnippet = `
-### Design Spec ${specNumber}
+### Design Spec ${specNumber} {#${specId}}
 
 <kbd><img alt="Figma Design Preview" src="${attachmentUrl}" /></kbd>
 
 <details>
 <summary>spec details</summary>
 
-**Design Link:** <a href="${cleanUrl}" target="_blank">View in Figma</a>
+**Design Link:** <a href="${cleanUrl}" target="_blank" rel="noopener">View in Figma</a>
 
 **Version:** ${latestVersion.id}
 
