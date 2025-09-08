@@ -4,6 +4,9 @@
 
 # Figma PR Images - Github Action
 
+> [!WARNING]
+> **Figma Token Required**: This GitHub Action requires a Figma API token to be stored as a repository secret. If you can't properly scope a Figma token for all repository owners/collaborators, consider using the [personal browser extension](https://github.com/wildemat/figma-pr-browser-extension) instead, which runs locally without sharing tokens.
+
 Figma links and screenshots in PRs can become outdated as designs change while a PR is open.
 
 With this Github Action, copy and paste any number of figma node links into your PR and receive a nice, versioned outline of relevant design specs.
